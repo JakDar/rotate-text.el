@@ -28,7 +28,7 @@ compile:
 		-f batch-byte-compile \
 		*.el
 
-# --eval '(setq byte-compile-error-on-warn t)' \ FIXME: bring it back eventually
+# --eval '(setq byte-compile-error-on-warn t)' \ TODO: bring it back eventually
 checkdoc:
 	$(eval LOG := $(shell mktemp -d)/checklog.log)
 	@touch $(LOG)
