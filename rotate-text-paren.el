@@ -22,13 +22,18 @@
 (defvar rotate-text-paren-pairs  '(("()" "{}" "[]"))
   "*List of paren pair groups to rotate.")
 
+
+(defvar rotate-text-local-paren-pairs nil
+  "*Buffer local additions to `rotate-text-paren-pairs'.")
+(make-variable-buffer-local 'rotate-text-local-paren-pairs) ;TODO:bcm  use
+
 (defvar rotate-text-paren-get-paren-data-function nil
   "Function to find paren position for current point.
 Return (list :start <pos-before-start-char> :end <pos-before-end-char> :left <left-paren-char>).
 Defaults to `rotate-text-paren-show-paren-get-data' if set to nil.")
 
 (defun rotate-text-paren--symbols ()
-  "."
+  "For each paren group in `rotate-text-paren-pairs' return list (flattened) of parens."
   (mapcar
 
    (lambda (pairs)
@@ -39,8 +44,8 @@ Defaults to `rotate-text-paren-show-paren-get-data' if set to nil.")
          (string-to-char (substring pair 1 2))))
       pairs)) rotate-text-paren-pairs))
 
-(defun rotate-text-paren--left->pair (paren-group) ;TODO: cleanup
-  "."
+(defun rotate-text-paren--left->next-pair (paren-group) ;TODO: cleanup
+  "For each starting paren `PAREN-GROUP' return next paren pair we want to rotate to."
   (let ((startchars  (mapcar (lambda (pair) (substring pair 0 1) ) paren-group ))
         (rotated-pairs (cons (car (last paren-group)) (butlast paren-group))))
     (cl-mapcar #'cons startchars rotated-pairs)))
@@ -65,16 +70,26 @@ based on the left one."
            (startchar (plist-get parens :left)))
       (when parens
         (let
-            ((pair
+
+
+
+            ;; ((next-pair
+            ;;   (cl-find-if
+            ;;    (lambda (pair) (string= (car pair) startchar ))
+            ;;    (rotate-text-paren--left->next-pair (car rotate-text-paren-pairs))))) ;; TODO - support mupltiple pairs
+            (
+             ;; TODO:bcm find correct group
+             ;; rotate-text-paren--symbols
+
+             (next-pair
               (cl-find-if
-               (lambda (p) (string= (car p) startchar ))
-               (rotate-text-paren--left->pair (car rotate-text-paren-pairs)) ;; TODO - support mupltiple pairs
-               )))
-          (if pair
-              (rotate-text-paren--replace (cdr pair) start end)
+               (lambda (pair) (string= (car pair) startchar ))
+               (rotate-text-paren--left->next-pair (car rotate-text-paren-pairs))))) ;; TODO - support mupltiple pairs
+          (if next-pair
+              (rotate-text-paren--replace (cdr next-pair) start end)
             (message "Missing paren. starchar: [%s] , parens: [%S]"
                      startchar
-                     (rotate-text-paren--left->pair (car rotate-text-paren-pairs)))))))))
+                     (rotate-text-paren--left->next-pair (car rotate-text-paren-pairs)))))))))
 
 (defun rotate-text-paren--replace (pair start end)
   "Replace parens with a new PAIR at START and END in current buffer.
