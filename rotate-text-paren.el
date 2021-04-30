@@ -35,7 +35,6 @@ Defaults to `rotate-text-paren-show-paren-get-data' if set to nil.")
 (defun rotate-text-paren--symbols ()
   "For each paren group in `rotate-text-paren-pairs' return list (flattened) of parens."
   (mapcar
-
    (lambda (pairs)
      (mapcan
       (lambda (pair)
@@ -69,22 +68,17 @@ based on the left one."
            (end (plist-get parens :end))
            (startchar (plist-get parens :left)))
       (when parens
-        (let
-
-
-
-            ;; ((next-pair
-            ;;   (cl-find-if
-            ;;    (lambda (pair) (string= (car pair) startchar ))
-            ;;    (rotate-text-paren--left->next-pair (car rotate-text-paren-pairs))))) ;; TODO - support mupltiple pairs
-            (
-             ;; TODO:bcm find correct group
-             ;; rotate-text-paren--symbols
-
-             (next-pair
-              (cl-find-if
-               (lambda (pair) (string= (car pair) startchar ))
-               (rotate-text-paren--left->next-pair (car rotate-text-paren-pairs))))) ;; TODO - support mupltiple pairs
+        (let* (
+               (left-to-next-pair
+                (apply 'cl-concatenate 'list
+                       (mapcar
+                        #'rotate-text-paren--left->next-pair
+                        rotate-text-paren-pairs)))
+               (next-pair
+                (cl-find-if
+                 (lambda (pair) (string= (car pair) startchar ))
+                 left-to-next-pair))
+               )
           (if next-pair
               (rotate-text-paren--replace (cdr next-pair) start end)
             (message "Missing paren. starchar: [%s] , parens: [%S]"
