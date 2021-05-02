@@ -23,10 +23,6 @@
   "*List of paren pair groups to rotate.")
 
 
-(defvar rotate-text-local-paren-pairs nil
-  "*Buffer local additions to `rotate-text-paren-pairs'.")
-(make-variable-buffer-local 'rotate-text-local-paren-pairs) ;TODO:bcm  use
-
 (defvar rotate-text-paren-get-paren-data-function nil
   "Function to find paren position for current point.
 Return (list :start <pos-before-start-char> :end <pos-before-end-char> :left <left-paren-char>).
@@ -43,7 +39,7 @@ Defaults to `rotate-text-paren-show-paren-get-data' if set to nil.")
          (string-to-char (substring pair 1 2))))
       pairs)) rotate-text-paren-pairs))
 
-(defun rotate-text-paren--left->next-pair (paren-group) ;TODO: cleanup
+(defun rotate-text-paren--left->next-pair (paren-group)
   "For each starting paren `PAREN-GROUP' return next paren pair we want to rotate to."
   (let ((startchars  (mapcar (lambda (pair) (substring pair 0 1) ) paren-group ))
         (rotated-pairs (cons (car (last paren-group)) (butlast paren-group))))
@@ -77,13 +73,12 @@ based on the left one."
                (next-pair
                 (cl-find-if
                  (lambda (pair) (string= (car pair) startchar ))
-                 left-to-next-pair))
-               )
+                 left-to-next-pair)))
           (if next-pair
               (rotate-text-paren--replace (cdr next-pair) start end)
             (message "Missing paren. starchar: [%s] , parens: [%S]"
                      startchar
-                     (rotate-text-paren--left->next-pair (car rotate-text-paren-pairs)))))))))
+                     left-to-next-pair)))))))
 
 (defun rotate-text-paren--replace (pair start end)
   "Replace parens with a new PAIR at START and END in current buffer.
