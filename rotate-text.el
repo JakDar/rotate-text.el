@@ -1,4 +1,4 @@
-;;; rotate-text.el --- cycle through words, symbols and patterns
+;;; rotate-text.el --- Cycle through words, symbols and patterns
 ;;
 ;; Copyright (C) 2009 Nikolaj Schumacher
 ;;
@@ -6,6 +6,7 @@
 ;; Version: 0.1
 ;; Keywords: abbrev, convenience, matching
 ;; URL: http://nschum.de/src/emacs/rotate-text/
+;; Package-Requires: ((emacs "25.3"))
 ;; Compatibility: GNU Emacs 22.x, GNU Emacs 23.x
 ;;
 ;; This file is NOT part of GNU Emacs.
@@ -51,7 +52,7 @@
 ;;
 ;;; Code:
 
-(eval-when-compile (require 'cl))
+(eval-when-compile (require 'cl-lib))
 
 (add-to-list 'debug-ignored-errors "^Nothing to rotate$")
 
@@ -85,7 +86,7 @@ Each element is a list of symbols that should be cycled through."
 Each element is a list of words that should be cycled through.  Individual
 segments in symbol names are recognized as words, i.e. windowWidth can be
 replaced with windowHeight.
-All entries must be in lower case. The case is determined by the rotated
+All entries must be in lower case.  The case is determined by the rotated
 text."
   :group 'rotate-text
   :type '(repeat (repeat :tag "Rotation group" (string :tag "Word"))))
@@ -190,25 +191,25 @@ COM-SYMBOLS, COM-WORDS and COM-PATTERNS are per-command addition to `rotate-text
         match replacement)
     (or ;; symbols
         (when (setq match (rotate-text-symbol-at-point))
-          (dolist (symbols (append com-symbols rotate-text-local-symbols
+          (cl-dolist (symbols (append com-symbols rotate-text-local-symbols
                                    rotate-text-symbols))
             (when (setq replacement
                         (rotate-text-replacement symbols match arg))
-              (return t))))
+              (cl-return t))))
         ;; words
         (when (setq match (rotate-text-word-at-point))
-          (dolist (words (append com-words rotate-text-local-words
+          (cl-dolist (words (append com-words rotate-text-local-words
                                  rotate-text-words))
             (when (setq replacement
                         (rotate-text-replacement words (downcase match) arg))
               (setq replacement (rotate-text-match-case match replacement))
-              (return t))))
+              (cl-return t))))
         ;; regexp
-        (dolist (pattern (append com-patterns rotate-text-local-patterns
+        (cl-dolist (pattern (append com-patterns rotate-text-local-patterns
                                  rotate-text-patterns))
           (when (setq match (rotate-text-match-at-point (car pattern)))
             (setq replacement (rotate-text-replacement (cdr pattern) match arg))
-            (return t))))
+            (cl-return t))))
 
     (if (not replacement)
         (progn (unless default-string
